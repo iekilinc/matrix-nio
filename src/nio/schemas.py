@@ -1946,6 +1946,24 @@ class Schemas:
         ],
     }
 
+    key_verification_done = {
+        "type": "object",
+        "properties": {
+            "sender": {"type": "string"},
+            "content": {
+                "type": "object",
+                "properties": {"transaction_id": {"type": "string"}},
+                "required": [
+                    "transaction_id",
+                ],
+            },
+        },
+        "required": [
+            "sender",
+            "content",
+        ],
+    }
+
     key_verification_cancel = {
         "type": "object",
         "properties": {

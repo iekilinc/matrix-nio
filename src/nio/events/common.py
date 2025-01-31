@@ -144,6 +144,11 @@ class KeyVerificationMacMixin:
 
 
 @dataclass
+class KeyVerificationDoneMixin:
+    """Event signaling that a key verification process/request has succeded."""
+
+
+@dataclass
 class KeyVerificationCancelMixin:
     """Event signaling that a key verification process has been canceled.
 

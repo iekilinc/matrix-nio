@@ -32,6 +32,7 @@ from ..schemas import Schemas
 from .common import (
     KeyVerificationAcceptMixin,
     KeyVerificationCancelMixin,
+    KeyVerificationDoneMixin,
     KeyVerificationEventMixin,
     KeyVerificationKeyMixin,
     KeyVerificationMacMixin,
@@ -90,6 +91,8 @@ class ToDeviceEvent:
             return KeyVerificationKey.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.mac":
             return KeyVerificationMac.from_dict(event_dict)
+        elif event_dict["type"] == "m.key.verification.done":
+            return KeyVerificationDone.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.cancel":
             return KeyVerificationCancel.from_dict(event_dict)
         elif event_dict["type"] == "m.room_key_request":
@@ -373,6 +376,21 @@ class KeyVerificationMac(KeyVerificationMacMixin, KeyVerificationEvent):
             content["transaction_id"],
             content["mac"],
             content["keys"],
+        )
+
+
+@dataclass
+class KeyVerificationDone(KeyVerificationDoneMixin, KeyVerificationEvent):
+    """Event signaling that a key verification process/request has succeded."""
+
+    @classmethod
+    @verify(Schemas.key_verification_done)
+    def from_dict(cls, parsed_dict):
+        content = parsed_dict["content"]
+        return cls(
+            parsed_dict,
+            parsed_dict["sender"],
+            content["transaction_id"],
         )
 
 
