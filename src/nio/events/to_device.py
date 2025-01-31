@@ -35,6 +35,7 @@ from .common import (
     KeyVerificationEventMixin,
     KeyVerificationKeyMixin,
     KeyVerificationMacMixin,
+    KeyVerificationRequestMixin,
     KeyVerificationStartMixin,
 )
 from .misc import BadEventType, logger, verify
@@ -79,6 +80,8 @@ class ToDeviceEvent:
 
         if event_dict["type"] == "m.room.encrypted":
             return ToDeviceEvent.parse_encrypted_event(event_dict)
+        elif event_dict["type"] == "m.key.verification.request":
+            return KeyVerificationRequest.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.start":
             return KeyVerificationStart.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.accept":
@@ -219,6 +222,34 @@ class KeyVerificationEvent(KeyVerificationEventMixin, ToDeviceEvent):
             process. Must be unique with respect to the devices involved.
 
     """
+
+
+@dataclass
+class KeyVerificationRequest(KeyVerificationRequestMixin, KeyVerificationEvent):
+    """Event requesting a SAS key verification process.
+
+    Attributes:
+        from_device (str): The device ID which is initiating the process.
+        methods (list): The verification methods supported by the sender.
+        timestamp (int): The POSIX timestamp in milliseconds for when the
+            request was made. If the request is in the future by more than 5
+            minutes or more than 10 minutes in the past, the message should be
+            ignored by the receiver.
+
+    """
+
+    @classmethod
+    @verify(Schemas.key_verification_request)
+    def from_dict(cls, parsed_dict):
+        content = parsed_dict["content"]
+        return cls(
+            parsed_dict,
+            parsed_dict["sender"],
+            content["transaction_id"],
+            content["from_device"],
+            content["methods"],
+            content["timestamp"],
+        )
 
 
 @dataclass
