@@ -24,7 +24,7 @@ import olm
 
 from ..api import Api
 from ..event_builders import ToDeviceMessage
-from ..events import KeyVerificationEvent, KeyVerificationStart
+from ..events import KeyVerificationEvent, KeyVerificationRequest, KeyVerificationStart
 from ..exceptions import LocalProtocolError
 from .device import OlmDevice
 
@@ -208,6 +208,44 @@ class Sas(olm.Sas):
         self.creation_time = datetime.now()
         self._last_event_time = self.creation_time
         super().__init__()
+
+    @classmethod
+    def accept_key_verification_request(
+        cls, own_device: str, event: KeyVerificationRequest
+    ) -> ToDeviceMessage:
+        """Accept or cancel a key verification request.
+
+        If the sender's methods don't include a method that is implemented,
+        cancel the key verification process. Otherwise, accept it with a ready
+        event.
+        """
+        supported_methods = set(cls._sas_method_v1)
+        matching_methods = supported_methods | set(event.methods)
+
+        if len(matching_methods) == 0:
+            type = "m.key.verification.cancel"
+            cancel_code, cancel_reason = cls._unknown_method_error
+            content = {
+                "code": cancel_code,
+                "reason": cancel_reason,
+                "transaction_id": event.transaction_id,
+            }
+        else:
+            type = "m.key.verification.ready"
+            content = {
+                "from_device": own_device,
+                "methods": list(matching_methods),
+                "transaction_id": event.transaction_id,
+            }
+
+        message = ToDeviceMessage(
+            type,
+            event.sender,
+            event.from_device,
+            content,
+        )
+
+        return message
 
     @classmethod
     def from_key_verification_start(
