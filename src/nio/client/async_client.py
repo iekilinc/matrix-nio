@@ -75,12 +75,14 @@ from ..crypto import (
     async_encrypt_attachment,
     async_generator_from_data,
 )
+from ..crypto.sas import Sas
 from ..event_builders import ToDeviceMessage
 from ..events import (
     AccountDataEvent,
     BadEventType,
     EphemeralEvent,
     Event,
+    KeyVerificationRequest,
     MegolmEvent,
     PresenceEvent,
     PushAction,
@@ -1418,6 +1420,23 @@ class AsyncClient(Client):
         a consistent state. In particular, it will be possible to run `sync_forever` again at a later point.
         """
         self._stop_sync_forever = True
+
+    @logged_in_async
+    @store_loaded
+    async def accept_key_verification_request(
+        self,
+        event: KeyVerificationRequest,
+        tx_id: Optional[str] = None,
+    ) -> Union[ToDeviceResponse, ToDeviceError]:
+        """Accept or cancel a key verification request.
+
+        If the sender's methods don't include a method that is implemented,
+        cancel the key verification process. Otherwise, accept it with a ready
+        event.
+        """
+        assert self.device_id
+        message = Sas.accept_key_verification_request(self.device_id, event)
+        return await self.to_device(message, tx_id)
 
     @logged_in_async
     @store_loaded
