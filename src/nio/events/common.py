@@ -56,6 +56,22 @@ class KeyVerificationRequestMixin:
 
 
 @dataclass
+class KeyVerificationReadyMixin:
+    """Event accepting a key verification process request.
+
+    Attributes:
+        from_device (str): The device ID which is accepting the request.
+        methods (list): The verification methods supported by the sender,
+            corresponding to the verification methods indicated in the
+            m.key.verification.request message.
+
+    """
+
+    from_device: str = field()
+    methods: List[str] = field()
+
+
+@dataclass
 class KeyVerificationStartMixin:
     """Event signaling the start of a SAS key verification process.
 

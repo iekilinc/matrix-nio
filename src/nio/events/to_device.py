@@ -36,6 +36,7 @@ from .common import (
     KeyVerificationEventMixin,
     KeyVerificationKeyMixin,
     KeyVerificationMacMixin,
+    KeyVerificationReadyMixin,
     KeyVerificationRequestMixin,
     KeyVerificationStartMixin,
 )
@@ -83,6 +84,8 @@ class ToDeviceEvent:
             return ToDeviceEvent.parse_encrypted_event(event_dict)
         elif event_dict["type"] == "m.key.verification.request":
             return KeyVerificationRequest.from_dict(event_dict)
+        elif event_dict["type"] == "m.key.verification.ready":
+            return KeyVerificationReady.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.start":
             return KeyVerificationStart.from_dict(event_dict)
         elif event_dict["type"] == "m.key.verification.accept":
@@ -252,6 +255,31 @@ class KeyVerificationRequest(KeyVerificationRequestMixin, KeyVerificationEvent):
             content["from_device"],
             content["methods"],
             content["timestamp"],
+        )
+
+
+@dataclass
+class KeyVerificationReady(KeyVerificationReadyMixin, KeyVerificationEvent):
+    """Event accepting a key verification process request.
+
+    Attributes:
+        from_device (str): The device ID which is accepting the request.
+        methods (list): The verification methods supported by the sender,
+            corresponding to the verification methods indicated in the
+            m.key.verification.request message.
+
+    """
+
+    @classmethod
+    @verify(Schemas.key_verification_ready)
+    def from_dict(cls, parsed_dict):
+        content = parsed_dict["content"]
+        return cls(
+            parsed_dict,
+            parsed_dict["sender"],
+            content["transaction_id"],
+            content["from_device"],
+            content["methods"],
         )
 
 

@@ -1824,6 +1824,30 @@ class Schemas:
         ],
     }
 
+    key_verification_ready = {
+        "type": "object",
+        "properties": {
+            "sender": {"type": "string"},
+            "content": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {"type": "string"},
+                    "from_device": {"type": "string"},
+                    "methods": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+            "required": [
+                "transaction_id",
+                "from_device",
+                "methods",
+            ],
+        },
+        "required": [
+            "sender",
+            "content",
+        ],
+    }
+
     key_verification_start = {
         "type": "object",
         "properties": {
